@@ -17,10 +17,10 @@ void solve_LU				(int N, TYPE v[], TYPE *u);
 void solve_general			(int N, TYPE *v);
 void solve_specific			(int N, TYPE *v);
 TYPE find_max_error			(int N, TYPE v[], TYPE u[]);
-TYPE CPU_runtime			(void (*calculate) (int, TYPE *), int N, TYPE *v, TYPE u[], string method_name);
+string CPU_runtime			(void (*calculate) (int, TYPE *), int N, TYPE *v, TYPE u[], string method_name);
 
 
-TYPE CPU_runtime			(void (*calculate) (int, TYPE *), int N, TYPE *v, TYPE u[], string method_name){
+string CPU_runtime			(void (*calculate) (int, TYPE *), int N, TYPE *v, TYPE u[], string method_name){
 	clock_t start, finish;
 	start = clock();
 	calculate (N, v);
@@ -28,7 +28,9 @@ TYPE CPU_runtime			(void (*calculate) (int, TYPE *), int N, TYPE *v, TYPE u[], s
 	TYPE e = find_max_error			(N, v, u);
 
 	cout << "CPU runtime of method for N = "<< N << " "  << method_name << " " << ((finish - start)*1.0/CLOCKS_PER_SEC) << " " << e <<endl;
-	return ( ((finish - start)*1.0/CLOCKS_PER_SEC));
+	TYPE took = ((finish - start)*1.0/CLOCKS_PER_SEC);
+	string output =to_string (took) + " " + to_string(e);
+	return output;
 }
 
 
@@ -137,7 +139,6 @@ void solve_specific 			(int N, TYPE *v){
 
 TYPE find_max_error 			 (int N, TYPE v[], TYPE u[]){
     TYPE max_error = -99999;
-    TYPE h = 1.0/(N+1);
     for (int i = 1; i < N; i++){
 	TYPE temp = log10 (abs(v[i] - u[i])/ u[i]);
 	//cout << temp << endl;
@@ -146,12 +147,109 @@ TYPE find_max_error 			 (int N, TYPE v[], TYPE u[]){
     return max_error;
 }
 
+void store (string file_name, string result){
+	ofstream output (file_name);
+	if (output.is_open())
+		output << result;
+	output.close();
+}
+
+void taskb (){
+	int	N = 1;
+	TYPE 	h;
+	string r = "";
+	for (int i = 1; i <= 3; i++){
+		N *= 10;
+		h = 1.0 /(N + 1.0);
+		TYPE	*x = new TYPE [N];
+		TYPE	*u = new TYPE [N];
+
+		for (int j = 0; j < N; j++){
+			x[j] = h * (j + 1);
+			u[j] = 1 - (1-exp(-10))*x[j] - exp(-10*x[j]);
+		}
+
+		TYPE *v_general_solution = new TYPE[N];
+		
+		r +=  to_string(N) + " " + CPU_runtime(
+			solve_general, N, v_general_solution, u, "General Solution"
+		) + "\n";
+		
+		delete []x; delete []u;
+		delete []v_general_solution;
+	}
+	string file_name = "taskb.txt";
+	store (file_name, r);
+}
 
 
+void taskc (){
+	int	N = 1;
+	TYPE 	h;
+	string r = "";
+	for (int i = 1; i <= 6; i++){
+		N *= 10;
+		h = 1.0 /(N + 1.0);
+		TYPE	*x = new TYPE [N];
+		TYPE	*u = new TYPE [N];
+
+		for (int j = 0; j < N; j++){
+			x[j] = h * (j + 1);
+			u[j] = 1 - (1-exp(-10))*x[j] - exp(-10*x[j]);
+		}
+
+		TYPE *v_general_solution = new TYPE[N];
+		TYPE *v_s		 = new TYPE[N];
+		r +=  to_string(N) + " " + CPU_runtime(
+			solve_general, N, v_general_solution, u, "General Solution"
+		) + " "
+		+ CPU_runtime(
+			solve_specific, N, v_s, u, "specific Solution"
+		) + "\n";
+		
+		delete []x; delete []u;
+		delete []v_general_solution;
+		delete []v_s; 
+	}
+	string file_name = "taskc.txt";
+	store (file_name, r);
+}
+
+void taskd (){
+	int	N = 1;
+	TYPE 	h;
+	string r = "";
+	for (int i = 1; i <= 4; i++){
+		N *= 10;
+		h = 1.0 /(N + 1.0);
+		TYPE	*x = new TYPE [N];
+		TYPE	*u = new TYPE [N];
+
+		for (int j = 0; j < N; j++){
+			x[j] = h * (j + 1);
+			u[j] = 1 - (1-exp(-10))*x[j] - exp(-10*x[j]);
+		}
+
+		TYPE *v_general_solution = new TYPE[N];
+		TYPE *v_LU		 = new TYPE[N];
+		r +=  to_string(N) + " " + CPU_runtime(
+			solve_general, N, v_general_solution, u, "General Solution"
+		) + " "
+		+ CPU_runtime(
+			solve_LU, N, v_LU, u, "LU Solution"
+		) + "\n";
+		
+		delete []x; delete []u;
+		delete []v_general_solution;
+		delete []v_LU; 
+	}
+	string file_name = "taskd.txt";
+	store (file_name, r);
+}
 
 int main (){
-	int 	k = 1;
-	int	N = 1;
+	//int 	k = 1;
+/*	int	N = 1;
 	TYPE 	h;
 	
 	for (int i = 1; i <= 7; i++){
@@ -172,18 +270,24 @@ int main (){
 		TYPE *v_general_solution = new TYPE[N];
 		TYPE *v_LU = new TYPE[N];
 		TYPE *v_s = new TYPE[N];
-		solve_specific	(N, v_s);
-		CPU_runtime(
+		//solve_specific	(N, v_s);
+		cout << CPU_runtime(
 			solve_general, N, v_general_solution, u, "General Solution"
 		);
-		CPU_runtime(
+		/*cout << CPU_runtime(
 			solve_LU, N, v_LU, u, "LU Solution"
-		);
+		);*/
 		
-		
+		/*
 		cout << "\n\n\n\n\n";
 		//for (int j = 0; j < N; j++)
 			//cout << v_general_solution[j] << "\t\t" << v_s[j] << "\t\t" << v_LU[j] << "\t\t" << u[j] << '\n'; 
 		delete []x; delete []u;
-	}
+		delete []v_general_solution;
+		delete []v_LU;
+		delete []v_s;
+	}*/
+	taskb();
+	taskc();
+	taskd();
 }
