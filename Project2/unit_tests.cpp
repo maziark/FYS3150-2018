@@ -60,11 +60,18 @@ bool test_max_off_diagonal_3() {
 	TYPE test_diag = 0.0;
 	delete [] A;
 	return (fabs(diag - 3) < epsilon);
+<<<<<<< HEAD
 >>>>>>> e688164b9378f24a1376fadfea9c86e92e752ab4
+=======
+}
+>>>>>>> baf9692e27938b8736ba6fcbd51a0f9481f91dca
 
+bool test_orthogonality() {
+	return -1;
 }
 
 int main (){
+<<<<<<< HEAD
 <<<<<<< HEAD
   cout << "result " << test_max_off_diagonal() << endl;
   return 0;
@@ -74,6 +81,9 @@ int main (){
 
 =======
 	cout << "result " << test_max_off_diagonal() << endl;
+=======
+	cout << "result max_off_diagonal(): " << test_max_off_diagonal() << endl;
+>>>>>>> baf9692e27938b8736ba6fcbd51a0f9481f91dca
 	return 0;
 }
 >>>>>>> e688164b9378f24a1376fadfea9c86e92e752ab4
