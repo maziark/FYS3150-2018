@@ -2,7 +2,6 @@
 
 TYPE max_off_diagonal (int N, int *x, int *y, TYPE **A){
 	TYPE element_max= 0.0;
-	cout << "HERE" << endl;
 	for (int i = 0; i < N; i++){
 		for (int j = i + 1; j < N; j++){
 			if (fabs(A[i][j]) > element_max){
@@ -20,14 +19,14 @@ void setA(TYPE **A, int N){
 		cout << endl;
 		for (int j = 0; j < N; j++){
 			A[i][j] = -1*i*j;
-		}	
+		}
 	}
 }
 
 void jacobi_rotate (int N, int l, int k, TYPE **A, TYPE **R){
 	TYPE tau;
 	TYPE s, c, t;
-	
+
 
 	if (A[k][l] != 0) {
 		tau = (A[l][l] - A[k][k])/(2.0 * A[k][l]);
@@ -68,13 +67,13 @@ int jacobi_method(int N, TYPE **A, TYPE **R){
 	int iter = 0;
 	int i, j;
 	int max_iter = N * N * N;
-	
-	TYPE tolerance = 1.0e-8;	
+
+	TYPE tolerance = 1.0e-8;
 	TYPE max_off_diag_value = 0;
 	max_off_diag_value = max_off_diagonal(N, &i, &j, A);
 
-	
-	
+
+
 	while (max_off_diag_value > tolerance && iter < max_iter){
 		iter ++;
 		jacobi_rotate (N, i, j, A, R);
@@ -93,30 +92,19 @@ void allocateMemory (int N, TYPE **A,TYPE **R){
 	}
 }
 
-int main(){
+/*int main(){
 	int 	N = 10 ;
 	TYPE	**A;
-	TYPE	**R;	
+	TYPE	**R;
 	A = new TYPE* [N+1];
 	R = new TYPE* [N+1];
 	for (int i = 0; i < N; i++){
 		A[i] = new TYPE [N+1];
 		R[i] = new TYPE [N+1];
 	}
-	
-	
 
-	/*for (int i = 0; i < N; i++){
-		cout << endl;
-		for (int j = 0; j < N; j++){
-			cout << " " << A[i][j];
-		}
-	}
-	int p, q;
-	TYPE d;
-	d = max_off_diagonal (N, &p, &q, A);
-	cout << d << " " << p <<" " << q << endl;
-	*/
+
+
 	cout << "Enter N:" << endl;
 	cin >> N;
 	//allocateMemory (N, A, R);
@@ -141,4 +129,4 @@ int main(){
 	delete [] A; delete [] R;
 
 	return 0;
-}
+}*/
