@@ -32,10 +32,13 @@ bool test_max_off_diagonal_3() {
 	TYPE test_diag = 0.0;
 	delete [] A;
 	return (fabs(diag - 3) < epsilon);
+}
 
+bool test_orthogonality() {
+	return -1;
 }
 
 int main (){
-	cout << "result " << test_max_off_diagonal() << endl;
+	cout << "result max_off_diagonal(): " << test_max_off_diagonal() << endl;
 	return 0;
 }
