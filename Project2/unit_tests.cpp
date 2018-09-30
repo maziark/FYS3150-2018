@@ -75,6 +75,7 @@ bool test_Jacobi_rotation() {
 int main (){
 	cout << "result " << test_max_off_diagonal() << endl;
 	cout << test_Jacobi_rotation ();	
+	cout << "result max_off_diagonal(): " << test_max_off_diagonal() << endl;
 	return 0;
 }
 
