@@ -4,8 +4,8 @@ const TYPE epsilon = 10e-8;
 
 bool test_max_off_diagonal() {
 	int N = 3;
-	TYPE **A = new TYPE* [3];
-	for (int i = 0; i < 3; i++){
+	TYPE **A = new TYPE* [N];
+	for (int i = 0; i < N; i++){
 		A[i] = new TYPE [N];
 	}
 	A[0][0] = 2;

@@ -33,8 +33,8 @@ mat generate_mat (int N, TYPE h, TYPE a, TYPE d){
 
 
 void arma_diag (Eig *eig){
-	eig.S = eig.eigvector;
-	eig.D = diagmat(eig.eigenvalue);
+	eig->S = eig->eigvector;
+	eig->D = diagmat(eig->eigvalue);
 }
 
 Eig arma_eig (int N, TYPE a, TYPE d){
@@ -50,9 +50,9 @@ int main (){
 	int n;
 	cin >> n;
 	
-	Eig *result = arma_eig (n, -1, 2);
-	arma_diag(result);
-	cout << result->D << endl;
+	Eig result = arma_eig (n, -1, 2);
+	arma_diag(&result);
+	cout << result.D << endl;
 	return 0;
 }
 
