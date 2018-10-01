@@ -6,8 +6,6 @@ const TYPE epsilon = 10e-8;
 const TYPE rho_min = 0;
 const TYPE rho_max = 5;
 
-
-
 void printA(int N, TYPE **A){
 	for (int i = 0; i < N; i++){
 		cout << endl;
@@ -103,7 +101,7 @@ void jacobi_solution (int N, TYPE a, TYPE w_r, TYPE *lambda){
 
 
 
-int main (){
+int run_d (){
 	int  N = 100;
 	int  c = 4;
 	TYPE omega_r[] = {0.01, 0.5, 1.0, 5.0};
@@ -130,6 +128,10 @@ int main (){
 				lambda_jaco[0][j], lambda_jaco[1][j], lambda_jaco[2][j], lambda_jaco[3][j]);
 
 	}
+	return 0;
+}
+
+int main (){
 	return 0;
 }
 

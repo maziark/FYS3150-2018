@@ -101,8 +101,7 @@ void jacobi_solution (int N, TYPE a, TYPE d, TYPE *lambda){
 }
 
 
-
-int main (){
+int run_task_d (){
 	int  N = 100;
 	cout << "Enter value for N" << endl;
 	cin >> N;
@@ -121,6 +120,12 @@ int main (){
 		}
 		
 	}
+	return 0;
+}
+
+
+int main (){
+	run_task_d();
 	return 0;
 }
 
