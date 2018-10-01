@@ -1,5 +1,142 @@
 #include "JacobiMethod.h"
 
+/*struct Eig {
+	vec	eigvalue;
+	mat	eigvector;
+	mat	S;
+	mat	D;
+};*/
+
+
+
+
+  /*
+   * The function                             
+   *      TYPE find_a (int N)            
+   * Find the initial values of a, for the matrix 
+   * and initiates the matrix to be I(N*M)
+   * 
+   * Input data:                      
+   *  int N		- number of steps          
+   *
+   * Returns the value of a based on N
+   */
+
+TYPE find_a (int N){
+	TYPE rho_0, rho_N;
+
+	rho_0 = RHO_MIN;
+	rho_N = RHO_MAX;
+	
+	TYPE h = (rho_N - rho_0) / (1.0 * N);
+	
+	TYPE h2 = h*h;	
+
+	TYPE a;
+	
+	a = -1.0/h2;
+	return a;
+}
+
+
+  /*
+   * The function                             
+   *      TYPE find_d (int N, int i, int task, TYPE w_r = 0)
+   * Find the initial values of d (e_i), for the matrix 
+   * and initiates the matrix to be I(N*M)
+   * 
+   * Input data:                      
+   *  int N		- number of steps          
+   *  int i		- for task d (to find the potential)  
+   *  int task		- to add or not to add!        
+   *  TYPE w_r		- for task e to include the omega factor          
+   *
+   * Returns the value of d based on N, rho_i, and w_r
+   */
+
+TYPE find_d (int N, int i= 0, int task = 0, TYPE w_r = 0){
+	TYPE rho_0, rho_N, rho_i;
+	TYPE V_i;
+	TYPE d = 0;
+	rho_0 = RHO_MIN;
+	rho_N = RHO_MAX;
+	
+	TYPE h = (rho_N - rho_0) / (1.0 * N);
+	
+	TYPE h2 = h*h;	
+
+	rho_i = rho_0 + (i+1) * h;
+
+	V_i = rho_i * rho_i;
+	d = 2.0/h2;
+	if (task == 1) d += V_i;
+	if (task == 2) d = w_r*w_r*V_i + 1.0/rho_i;
+	
+	return d;
+}
+
+
+
+  /*
+   * The function                             
+   *      TYPE **allocateMemory (int N, int M, bool I = false)                  
+   * allocates the memory for a matrix of size N*M 
+   * and initiates the matrix to be I(N*M)
+   * 
+   * Input data:                      
+   *  int N		- number of rows          
+   *  int M		- number of cols
+   *  bool I		- true : I (N*N)
+   * Returns the pointer to the array
+   */
+
+
+
+TYPE **allocateMemory (int N, int M, bool I = false){
+	TYPE **A = new TYPE *[N];
+		
+	for (int i = 0; i < N; i++){
+		A[i] = new TYPE[M];
+		for (int j = 0; j < M; j++){ 
+			A[i][j] = 0;
+			if (I == true &&  i == j) A[i][j] = 1;
+		}
+	}
+
+	return A;
+}
+
+  /*
+   * The function                             
+   *      void deallocateMemory (int N, int M, TYPE **A)
+   * deallocates the memory of the matrix of size N*M 
+   * and initiates the matrix to be I(N*M)
+   * 
+   * Input data:                      
+   *  int N		- number of rows          
+   *  int M		- number of cols
+   *  TYPE **A		- The matrix
+   * Returns void!
+   */
+void deallocateMemory (int N, int M, TYPE **A){
+	for (int i = 0; i < N; i++)
+		delete []A[i];
+}
+
+
+  /*
+   * The function                             
+   *      TYPE max_off_diagonal (int N, int *x, int *y, TYPE **A)                    
+   * finds the element with the largest |e_ij| in the matrix
+   * where i != j, considering that the matrix is symmetric, 
+   * just checks for the upper triangle
+   * Input data:                      
+   *  int N		- number of  rows          
+   *  int &x		- returns x index of the element  (God bless pointers!)       
+   *  int &y		- returns y index of the element  (God bless pointers!)
+   *  TYPE **A 		- pointer to the matrix                 
+   * Returns the value of the largest element                                
+   */
 TYPE max_off_diagonal (int N, int *x, int *y, TYPE **A){
 	TYPE element_max= 0.0;
 	for (int i = 0; i < N; i++){
@@ -14,15 +151,20 @@ TYPE max_off_diagonal (int N, int *x, int *y, TYPE **A){
 	return element_max;
 }
 
-void setA(TYPE **A, int N){
-	for (int i = 0; i < N; i++){
-		cout << endl;
-		for (int j = 0; j < N; j++){
-			A[i][j] = -1*i*j;
-		}
-	}
-}
-
+  /*
+   * The function                             
+   *      void jacobi_rotate (int N, int l, int k, TYPE **A, TYPE **R)                   
+   * Executes one jacobi rotation on the matrix A,
+   * 
+   * Input data:                      
+   *  int N		- number of  rows
+   *  int l		- x index of the max_off_diagonal element
+   *  int k		- y index of the max_off_diagonal element
+   *  int &x		- returns x index of the element  (God bless pointers!)       
+   *  TYPE **A		- pointer to the matrix A, the rotation will be on matrix A
+   *  TYPE **R 		- pointer to the matrix R, initially R is I_{n*n}                
+   * Returns void! The Eigenvalues and eigenvectors will be kept on R and A                                
+   */
 void jacobi_rotate (int N, int l, int k, TYPE **A, TYPE **R){
 	TYPE tau;
 	TYPE s, c, t;
@@ -62,6 +204,20 @@ void jacobi_rotate (int N, int l, int k, TYPE **A, TYPE **R){
 
 }
 
+  /*
+   * The function                             
+   *      int jacobi_method(int N, TYPE **A, TYPE **R)                
+   * Executes one jacobi rotation on the matrix A,
+   * 
+   * Input data:                      
+   *  int N		- number of  rows
+   *  int l		- x index of the max_off_diagonal element
+   *  int k		- y index of the max_off_diagonal element
+   *  int &x		- returns x index of the element  (God bless pointers!)       
+   *  TYPE **A		- pointer to the matrix A, the rotation will be on matrix A
+   *  TYPE **R 		- pointer to the matrix R, initially R is I_{n*n}                
+   * Returns void! The Eigenvalues and eigenvectors will be kept on R and A                                
+   */
 
 int jacobi_method(int N, TYPE **A, TYPE **R){
 	int iter = 0;
@@ -83,50 +239,48 @@ int jacobi_method(int N, TYPE **A, TYPE **R){
 	return iter;
 }
 
-void allocateMemory (int N, TYPE **A,TYPE **R){
-	A = new TYPE* [N + 1];
-	R = new TYPE* [N + 1];
+
+/* ************************************ */
+/* ARMADILLOOOOOOOOOOOOOOOOOOOOOOOOOOOO */
+/* ************************************ */
+
+
+
+mat generate_mat (int N, TYPE h, TYPE a, TYPE d){
+	mat  A = zeros <mat>(N, N);
 	for (int i = 0; i < N; i++){
-		A[i] = new TYPE [N + 1];
-		R[i] = new TYPE [N + 1];
+		A(i, i) = d;
+		if (i < N-1) {
+			A(i, i+1) = a;
+			A(i+1, i) = a;
+		}
 	}
+	return A; 
 }
 
-/*int main(){
-	int 	N = 10 ;
-	TYPE	**A;
-	TYPE	**R;
-	A = new TYPE* [N+1];
-	R = new TYPE* [N+1];
-	for (int i = 0; i < N; i++){
-		A[i] = new TYPE [N+1];
-		R[i] = new TYPE [N+1];
-	}
 
+void arma_diag (Eig *eig){
+	eig->S = eig->eigvector;
+	eig->D = diagmat(eig->eigvalue);
+}
 
-
-	cout << "Enter N:" << endl;
-	cin >> N;
-	//allocateMemory (N, A, R);
-	cout << "Memory allocated" << endl;
-	setA (A, N);
-
-	for (int i = 0; i < N; i++){
-		cout << endl;
-		for (int j = 0; j < N; j++){
-			cout << " " << A[i][j];
-		}
-	}
-	cout << "Memory set" << endl;
-	cout << jacobi_method(N, A, R);
-	for (int i = 0; i < N; i++){
-		cout << endl;
-		for (int j = 0; j < N; j++){
-			cout << " " << A[i][j];
-		}
-	}
-
-	delete [] A; delete [] R;
-
+Eig arma_eig (int N, TYPE a, TYPE d){
+	TYPE h = 1.0/(1.0+ N);
+	mat A = generate_mat (N, h, a, d);
+	Eig result;
+		
+	eig_sym(result.eigvalue, result.eigvector, A); 
+	//cout << diagmat(result.eigvalue) << endl << result.eigvector << endl;
+	return result;
+}
+int main (){
+	int n;
+	cin >> n;
+	
+	Eig result = arma_eig (n, -1, 2);
+	arma_diag(&result);
+	cout << result.D << endl;
 	return 0;
-}*/
+}
+
+
