@@ -1,3 +1,22 @@
+/*
+ * This class is used to create Celestial bodies
+ * (As its names suggests!)
+ * Each Celestial Body has a
+ * String name,
+ * vec3 initial position, initial velocity
+ * The values mentioned about are initiated when the
+ * object is created.
+ *
+ * vec3 force, acceleration
+ * are found during the process.
+ *
+ * This class is whether independantly called with in
+ * the main to keep track of certain planets,
+ * but mainly used in the SolarSystem class.
+ *
+*/
+
+
 #include "vec3.h"
 #include <math.h>
 #include <string>
@@ -25,6 +44,11 @@ public:
     vec3 calcForce(CelestialObj &other, bool Ens);
     vec3 calcForce(CelestialObj& other, double beta);
 
+
+    /*
+     * The function setBack would turn back the time to the point where
+     * the object just got defined, so it can used for comparisions
+    */
     void setBack (){
         this->position = this->init_position;
         this->velocity = this->init_velocity;

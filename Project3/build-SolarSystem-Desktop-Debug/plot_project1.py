@@ -2,7 +2,6 @@ import numpy as np
 import math
 import sys
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
 
 n = 3
 d = 3

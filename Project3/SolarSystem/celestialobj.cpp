@@ -1,5 +1,6 @@
 #include "celestialobj.h"
 
+/* Constructors { */
 CelestialObj::CelestialObj()
 {
     this->mass = 0;
@@ -26,10 +27,22 @@ CelestialObj::CelestialObj(string name, double mass, vec3 position, vec3 velocit
     this->init_velocity = velocity;
 }
 
+/* }Constructors  */
+
+/*
+ * This function calculates the force between this body and the other one.
+ * Since there is already a function that would do the calculation with
+ * beta as a variable, this is just makes a call and returns the value.
+ *
+*/
 vec3 CelestialObj::calcForce(CelestialObj &other){
     return this->calcForce(other, 2.0);
 }
 
+/*
+ * Calculating gravitational force using the relativity correction.
+ *
+*/
 vec3 CelestialObj::calcForce(CelestialObj &other, bool Ens){
 
     vec3 f = calcForce(other);
@@ -42,7 +55,12 @@ vec3 CelestialObj::calcForce(CelestialObj &other, bool Ens){
     return f * (1 + rel);
 }
 
-
+/*
+ * This function calculates the Newtonian gravitational force.
+ * and it would return the vector of the force caused by the
+ * other planet
+ *
+*/
 vec3 CelestialObj::calcForce(CelestialObj &other, double beta){
     vec3 r = this->position - other.position;
     double d = r.length();

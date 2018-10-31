@@ -7,6 +7,7 @@ conf.horizons_server = 'https://ssd.jpl.nasa.gov/horizons_batch.cgi'
 
 ids = [str(i*100+99) for i in range(1,10)]
 ids.insert(0, '10')
+#ids.insert(len(ids), '1977 UB')
 objs = [Horizons(id=i, id_type= 'majorbody', epochs={'start':'2018-10-16', 'stop':'2018-11-15','step':'1d'}) for i in ids]
 
 vecs = [obj.vectors()[0] for obj in objs]

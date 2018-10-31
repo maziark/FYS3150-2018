@@ -5,22 +5,50 @@ SolarSystem::SolarSystem()
 
 }
 
+/*
+ * Constructors {
+*/
+
+// This constructor is just there for testing reasons, I prefer planets with names!
 CelestialObj& SolarSystem::addCelestialObj(double mass, vec3 position, vec3 velocity){
     this->collection.push_back(CelestialObj(mass, position, velocity));
     return collection.back();
 }
 
+
+// Will define a celestial object with the values given, and push them in the collection vector.
 CelestialObj& SolarSystem::addCelestialObj(string name, double mass, vec3 position, vec3 velocity){
     this->collection.push_back(CelestialObj(name, mass, position, velocity));
     return collection.back();
 }
 
+/*
+ * }Constructors
+*/
+
+/*
+ *  return collectoin so the solver functions (The ones defined in Euler,
+ *  and Verlet algorithm) get access to planets
+*/
 vector<CelestialObj> &SolarSystem::CelObj(){
     return collection;
 }
 
 
-
+/*
+ * The heart of the program, and the one that is the most time consuming
+ * while returning absoloutly nothing! (void)
+ *
+ * the idea is that it would set the KE, PE, momentum, and forces
+ * all to zero, and then produces pairs of celestiabl bodies, and
+ * calculates the forces that are involved.
+ *
+ * Using the third law of Newton, (I push you, you push me back), it cuts
+ * the calculation in half, so for n planets it will run for n(n - 1)/2
+ *
+ * it then calculates the KE, PE, and the force.
+ *
+*/
 void SolarSystem::calculateForce(){
     double G = 4*M_PI * M_PI;
     this->KE = 0;
@@ -51,6 +79,15 @@ void SolarSystem::calculateForce(){
 
 }
 
+
+/*
+ * This function had a very bright future, till I realized, I'm clueless
+ * when it gets to 3D plotting in python.
+ *
+ * it basically opens a file, if it is not already open, and then write the
+ * values of every celestial body in the solar system in that file
+ *
+*/
 void SolarSystem::writeToFile(string filename){
     if(!m_file.good()) {
         m_file.open(filename.c_str(), ofstream::out);
@@ -67,6 +104,10 @@ void SolarSystem::writeToFile(string filename){
     }
 }
 
+
+/*
+ * Calculates the total momentum of the system O(n)
+*/
 void SolarSystem::calculateTotalMomentum(){
     this->momentum.zeros();
     for(CelestialObj &body : collection) {
@@ -74,17 +115,25 @@ void SolarSystem::calculateTotalMomentum(){
     }
 }
 
+/*
+ * calls the setBack function of every body in the solar system.
+ * O(n)
+*/
 void SolarSystem::setBack(){
     for (CelestialObj &obj : collection){
         obj.setBack();
     }
 }
 
+// zero total momenum of the Solar system with sun
 void SolarSystem::zeroTotalMomentum(){
-    // zero total momenum of the Solar system with sun
     zeroTotalMomentum(0);
 }
 
+/*
+ * is used to make sure that the total momentum is zero,
+ * if the sun is not the center of orbit.
+*/
 void SolarSystem::zeroTotalMomentum(int n){
     calculateTotalMomentum();
     int i = 0;
@@ -94,3 +143,12 @@ void SolarSystem::zeroTotalMomentum(int n){
     }
 }
 
+/*
+ * returns the distance of a planet from the sun (considering that the
+ * sun is the first body added into the collection.
+ *
+ * Used for perihelion of Mercury.
+*/
+double SolarSystem::distanceFromSol(int i){
+    return (this->collection.at(i).position - this->collection.at(0).position).length();
+}

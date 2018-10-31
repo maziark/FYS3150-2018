@@ -1,3 +1,8 @@
+/*
+ * This is the class we used in the lectures,
+ * I only added the function zero() to it, for the sake of simplicity
+ *
+*/
 #ifndef VEC3_H
 #define VEC3_H
 #include <string>
@@ -24,7 +29,15 @@ public:
     void setX(double x) { components[0] = x; }
     void setY(double y) { components[1] = y; }
     void setZ(double z) { components[2] = z; }
+
+    /* ************************************ */
+    /* MEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE */
+    /* ************************************ */
     void zeros() {components[0] = 0; components[1] = 0; components[2] = 0;}
+
+    /* ************************************ */
+    /* END MEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE */
+    /* ************************************ */
 
     double &operator()(int index) { return components[index]; } // Allows access like myVector(0)
     double &operator[](int index) { return components[index]; } // Allows access like myVector[0]
