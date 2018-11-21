@@ -144,17 +144,14 @@ int main(int argc, char* argv[]){
 
         for (int de = -8; de <= 8; de += 4) w[de+8] = exp(-de/temp);
         //Initialize array for expectation values:
-        for (int i = 0; i < 5; i++) average[i] = total_average[i] = 0.; //Setter alle elementer lik null. [E, E^2, M, M^2, abs(M)]
+        for (int i = 0; i < 5; i++) average[i] = total_average[i] = 0.;
 
-        initialize(n_spins, spin_matrix, E, M, 1); //Kaller initialize
-        //Start Monte Carlo computation:
+        initialize(n_spins, spin_matrix, E, M, 1); 
         for (int cycles = 0; cycles < mcs; cycles++){
             Metropolis(n_spins, accepted_configs, spin_matrix, E, M, w, accepted_configs_vec, mc_counter);
-            //Update expectation values:
-            average[0] += E; average[1] += E*E;  //average is expectation values. I c) vil jeg plotte E jeg faar etter hver sweep gjennom lattice mot mcs
+            average[0] += E; average[1] += E*E;  
             average[2] += M; average[3] += M*M; average[4] += fabs(M);
-            //Fyller arrays for plotting:
-            E_vec[cycles] = E;  //Inneholder E-verdiene jeg skal plotte. Antall E-verdier i E_vec vil vaere lik mcs (per temperatur).
+            E_vec[cycles] = E; 
             E2_vec[cycles] = E*E;
             absM_vec[cycles] = fabs(M);
             absM2_vec[cycles] = fabs(M) * fabs(M);
@@ -169,14 +166,13 @@ int main(int argc, char* argv[]){
             MPI_Reduce(&average[i], &total_average[i], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         }
 
-        //print results:
         if ( my_rank == 0) {
-            output(n_spins, mcs, temp, average, total_average, E_vec, E2_vec, absM_vec, absM2_vec, num_susceptibility_vec, num_heatCapacity_vec); //temp er kalt temperature i Mortens program
+            output(n_spins, mcs, temp, average, total_average, E_vec, E2_vec, absM_vec, absM2_vec, num_susceptibility_vec, num_heatCapacity_vec);
 
         }
 
         //Print results:
-        //output(n_spins, mcs, temp, average, E_vec, absM_vec); //temp er kalt temperature i Mortens program
+        //output(n_spins, mcs, temp, average, E_vec, absM_vec);
 
         //free_matrix((void **) spin_matrix ); //free memory
 
@@ -256,12 +252,12 @@ void output(int n_spins, int mcs, double temp, double *average, double *total_av
 
   //Writing E- and M-values to file:
   //Plot i oppg c) (tror jeg):
-  /*for (int i =1; i < mcs; i++){ //Skriver til fil temp, E, E2, absM, absM2, Cv, susceptibility
+  /*for (int i =1; i < mcs; i++){ 
       ofile << temp << "  " << E_vec[i] << "  " << E2_vec[i]/(n_spins*n_spins) << "  " << absM_vec[i]<< "  " << absM2_vec[i]/(n_spins*n_spins) << "  " << num_heatCapacity_vec[i]/(n_spins*n_spins) << "  " << num_susceptibility_vec[i]/(n_spins*n_spins) << endl;  column: temp, 2 column: E, 3 column: abs(M), Cv, susceptibility
   //    //ofile << absM_vec[i] << endl;
   //}//End of writing E- and M-values to file */
 
-  //Plot i oppg e):
+  
   ofile << temp << "  " << Eaverage/(n_spins*n_spins) << "  " << E2average/(n_spins*n_spins) << "  " << Mabsaverage/(n_spins*n_spins) << "  " << M2average/(n_spins*n_spins) << " " << num_HeatCapacity/(n_spins*n_spins) << "  " << num_Susceptibility/(n_spins*n_spins) << endl;
 
   cout << "Numerical E average: " << Eaverage/n_spins/n_spins << endl;
