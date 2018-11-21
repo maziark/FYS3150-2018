@@ -1,0 +1,236 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{amsmath, amssymb}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage[english]{babel}
+\usepackage{pgfplotstable, booktabs, mathpazo}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{listings}
+\usepackage{gensymb}
+\usepackage{mathrsfs}
+\usepackage{color}
+
+\lstset { %
+    language=C++,
+    backgroundcolor=\color{black!5}, % set backgroundcolor
+    basicstyle=\footnotesize,% basic font setting
+}
+ 
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+ 
+\lstset{style=mystyle}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\pgfplotstableset{
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule}
+}
+
+\title{Project 4}
+\author{
+    \begin{tabular}{r l}
+        Maziar Kosarifar & (\texttt{maziark})\\
+        Marie Reichelt & (\texttt{marierei})
+\end{tabular}}
+\date{November 2018}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent
+In this project we aim to study the Ising model in two dimensions.
+%In this project we are going to study and simulate the solar system. We are comparing two different approaches of solving first order differential equations. We will look at the masses of different celestial bodies and the effect that other masses will have on their orbits.
+\end{abstract}
+
+\vfill
+
+\section{Introduction}
+
+The aim if this project is to study the Ising models using a $L \times L$ lattice. Looking at a more spesific case, we use the Ising model of a $2 \times 2$ lattice.
+
+
+
+\section{Theory}
+
+\subsection{Ising method}
+
+The Ising model is used to simulate phase transitions at finite temperature for magnetic systems\cite{mhj}. In its simplest form the energy can be expressed as:
+
+    $$E = -J \sum_{<kl>}^N s_k s_l - \mathscr{B} \sum_l^N s_k$$
+where $s_k = \pm 1$. N represents the total number of spins and J, the coupling constant, expresses the strength of the interaction between neighbouring spins. $\mathscr{B}$ is an external magnetic field. In this project we assume that there is no external magnetic field affecting the system, and therefore we use:
+
+\begin{equation}
+    E = -J \sum_{<kl>}^N s_k s_l
+\end{equation}
+The partition function extending over all microstates M is defined as:
+
+\begin{equation}
+    Z = \sum_{i=1}^M e^{-\beta E_i}
+\end{equation}
+Where $\beta = \frac{1}{kT}$ is the inverse temperature with k being the Boltzmann constant, and $E_i$ is the energy of a state $i$.
+
+The magnetization for a state $i$ over N spins is defined as:
+
+\begin{equation}
+    \mathscr{M}_i = \sum_{j=1}^N s_j
+\end{equation}
+We have the "temperature $T_c$ at which there is a sudden change from an ordered phase to a disordered phase as the temperature increased"\cite{esp}
+The specific heat is given by:
+
+\begin{equation}
+    C_V(T) \sim |T_c-T|^{\gamma} \rightarrow L^{-\beta /v}
+\end{equation}
+The susceptibility $\chi$:
+
+\begin{equation}
+    \chi (T) \sim |T_c - T|^{-\alpha} \rightarrow L^{\gamma /v}
+\end{equation}
+The probability function of element $i$:
+
+\begin{equation}
+    P_i(\beta) = \frac{e^{-\beta E_i}}{Z}
+\end{equation}
+
+
+\subsection{Expected values}
+
+For a $L \times L$ lattice with $L = 2$, we have $2^4$ possible states. We call this $\mathcal{S} = 2^4 = 16$. The different possibilities are shown in table 1 with their symmetries and expected values of energy and magnetic moment.
+
+\begin{table}[htb]
+\begin{center}
+\begin{tabular}{cccc}
+    State & Symmetries & Energy (J) & Magnetic moment \\ \hline
+    $ \begin{array}{cc}
+        \uparrow&\uparrow \\
+        \uparrow&\uparrow
+    \end{array} $ &
+    1 & -8 & 4
+    \\ \hline
+    $ \begin{array}{cc}
+        \uparrow&\uparrow \\
+        \uparrow&\downarrow
+    \end{array} $ &
+    4 & 0 & 2
+    \\ \hline
+    $ \begin{array}{cc}
+        \uparrow&\uparrow \\
+        \downarrow&\downarrow
+    \end{array} $ &
+    4 & 0 & 0
+    \\ \hline
+    $ \begin{array}{cc}
+        \uparrow&\downarrow \\
+        \downarrow&\uparrow
+    \end{array} $ &
+    2 & 8 & 0
+    \\ \hline
+    $ \begin{array}{cc}
+        \downarrow&\downarrow \\
+        \downarrow&\uparrow
+    \end{array} $ &
+    4 & 0 & -2
+    \\ \hline
+    $ \begin{array}{cc}
+        \downarrow&\downarrow \\
+        \downarrow&\downarrow
+    \end{array} $ &
+    1 & -8 & -4
+    \\ \hline
+\end{tabular}
+\end{center}
+\caption{All possible states for $L=2$}
+\label{table:states}
+\end{table}
+The partition function with $M = \mathcal{S}$ will then be:
+
+\begin{equation*}
+    Z = \sum_{i=1}^{\mathcal{S}} e^{-\beta E_i} = 2 e^{\beta 8J} + 2 e^{-\beta 8J} + 12 e^0 = 2 e^{\beta 8J} + 2 e^{-\beta 8J} + 12
+\end{equation*}
+Equations for the energy, the energy squared, the magnetization, the magnetization squared, the heat capacity, and the susceptibility are given as:
+
+\begin{align}
+    \langle E \rangle &= - \frac{1}{Z} \frac{\partial}{\partial \beta}Z\\
+    \langle E^2 \rangle &= \frac{1}{Z} \frac{\partial^2}{\partial \beta^2} Z\\
+    \langle M \rangle &= \frac{1}{Z} \sum_{i=1}^S M_i e^{-\beta E_i}\\
+    \langle M^2 \rangle &= \frac{1}{Z} \sum_{i=1}^S M_i^2 e^{-\beta E_i}\\
+    \langle C_V \rangle &= \frac{\langle M^2 \rangle - \langle M \rangle^2}{T^2}\\
+    \langle \chi \rangle &= \frac{\langle M^2 \rangle - \langle M \rangle^2}{T^2}
+\end{align}
+
+
+
+\section{Implementation}
+
+For implementation we choose to ...
+
+\subsection{Metropolis algorithm and Monte Carlos}
+
+"In general, most systems have an infinity of microstates making thereby the computation of Z practically impossible and a brute force Monte Carlo calculation over a given number of randomly selected microstates may therefore not yield those microstates which are important to equilibrium."\cite{mhj}
+
+
+\subsection{Parallelisation}
+
+
+
+
+
+
+\section{Results and discussion}
+
+\subsection{Comparison with analytical results}
+
+L=2.
+
+
+
+\section{Conclusion}
+
+
+
+
+\section{Source files}
+
+Source files are located in:
+\newline
+https://github.com/maziark/FYS3150-2018/tree/master/Project3
+\newline\newline
+
+
+\begin{thebibliography}{99}
+\bibitem{mhj} M. Hjort-Jensen, \textit{Computitional Physics Lecture Notes Fall 2015}, Department of Physics, University of Oslo, Oslo, Norway, page 392-455 (2015).
+\bibitem{numanal} T.Sauer, \textit{Numerical Analysis}, Pearson, Boston, United States, page 284-295 and 313-317 (2006)
+\bibitem{esp} M. Plischke, and B. Bergersen, \textit{Equilibrium Statistical Physics}, 2nd edition, World Scientific, page 63 (1994)
+\end{thebibliography}
+
+
+
+
+\end{document}
