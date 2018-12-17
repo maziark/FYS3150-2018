@@ -1,6 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from math import *
+
+def create_lambda(A, w, C):
+    return lambda t: A * sin(w * t) + C
+
 class SIRS:
     N = 1.0e5
     a = 1.0
@@ -9,21 +13,24 @@ class SIRS:
     # For more advanced model
     e = 0.0
     d = 0.0
-    d_l = 0.0
+    d_i = 0.0
     dt = 1e-5
 
-    def __init__ (self, N, a, b, c, d = 0, d_l = 0, e = 0) :
+    def __init__ (self, N, a, b, c,
+                d = create_lambda(0, 0, 0),
+                d_i = create_lambda(0, 0, 0),
+                e = create_lambda(0, 0, 0)) :
         self.a = a
         self.b = b
         self.c = c
         self.d = d
         self.e = e
-        self.d_l = d_l
+        self.d_i = d_i
         self.N = N
 
-        c1 = 4.0/(self.a * self.N)
-        c2 = 1.0/(self.b * self.N)
-        c3 = 1.0/(self.c * self.N)
+        c1 = 4.0/(self.a(0) * self.N)
+        c2 = 1.0/(self.b(0) * self.N)
+        c3 = 1.0/(self.c(0) * self.N)
 
         self.dt = min (c1, min(c2, c3))
 
@@ -31,17 +38,20 @@ class SIRS:
 
 
     def dS (self, R , I, S):
-        result = (self.c * R - self.a * S * I / self.N - self.d * S + self.e * self.N)
+        result = (self.c(0)* R - self.a(0)* S * I / self.N - self.d(0)* S + self.e(0)* self.N)
         return result
 
     def dI (self, S, I):
-        result = (self.a * S * I / self.N - self.b * I - self.d * I - self.d_l * I)
+        result = (self.a(0)* S * I / self.N - self.b(0)* I - self.d(0)* I - self.d_i(0) * I)
         return result
 
     def dR (self, I, R):
-        result = (self.b * I - self.c * R - self.d * R)
+        result = (self.b(0)* I - self.c(0)* R - self.d(0)* R)
         return result
 
+    def seasonal_a(self, t):
+        #return self.a * sin(self.omega * t) + self.h
+        return self.a
 
     def RK4 (self, S, I , time_frame):
         S0 = S
@@ -120,18 +130,18 @@ class SIRS:
                 r = np.random.random(3)
 
                 # P (S -> I) : S-- I++
-                if (r[0] < (self.dt * self.a * S * I / self.N) and (S > 0)):
+                if (r[0] < (self.dt * self.a(0)* S * I / self.N) and (S > 0)):
                     S -= 1
                     I += 1
 
                 # P (I -> R) : I-- R++
-                if (r[1] < (self.dt * self.b * I ) and (I > 0)) :
+                if (r[1] < (self.dt * self.b(0)* I ) and (I > 0)) :
                     I -= 1
                     R += 1
 
 
                 # P (R -> S) : R-- S++
-                if (r[2] < (self.dt * self.c * R ) and (R > 0)) :
+                if (r[2] < (self.dt * self.c(0)* R ) and (R > 0)) :
                     R -= 1
                     S += 1
 
@@ -147,4 +157,96 @@ class SIRS:
         for i in range(len(I_avg)) : I_avg[i] = np.mean (I_array[i])
         for i in range(len(R_avg)) : R_avg[i] = np.mean (R_array[i])
 
-        return (t_array, S_array, I_avg, R_avg)
+        return (t_array, S_avg, S_array, I_avg, I_array, R_avg, R_array)
+
+
+
+
+    def MC_vital (self, S_init, I_init, time_frame, n_samples = 10):
+        S = S_init
+        I = I_init
+        R = self.N - S - I
+
+
+
+        t_array = np.arange(0, time_frame, step = self.dt)
+        S_array = np.zeros((len(t_array), n_samples))
+        I_array = np.zeros((len(t_array), n_samples))
+        R_array = np.zeros((len(t_array), n_samples))
+
+        S_avg = np.zeros (len(t_array))
+        I_avg = np.zeros (len(t_array))
+        R_avg = np.zeros (len(t_array))
+
+        for i in range(n_samples):
+            S = S_init
+            I = I_init
+            R = self.N - S_init - I_init
+            t = 0
+            for j in range (len(t_array)):
+
+
+                while (t + self.dt < t_array[j]):
+                    t += self.dt
+                    # Generate Random Number :
+                    r = np.random.random(8)
+                    N = S + I + R
+                    # Here we have more actions
+                    # P(newBorn) [0]
+                    if (r[0] < (self.e(t) * N * self.dt)) :
+                        S += 1
+
+                    # P(S -> Death) [1]
+                    if (S > 0 and r[1] < (self.d(t) * S * self.dt)) :
+                        S -= 1
+
+                    # P(S -> I) [2]
+                    if (S > 0 and r[2] < (self.a(t) * S * I / N * self.dt)):
+                        I += 1
+                        S -= 1
+
+                    # P(I -> Death_I) [3]
+                    if (I > 0 and r[3] < (self.dt * self.d_i(t) * I)):
+                        I -= 1
+
+                    # P(I -> Death) [4]
+                    if (I > 0 and r[4] < (self.dt * self.d(t) * I)):
+                        I -= 1
+
+                    # P(I -> R) [5]
+                    if (I > 0 and r[5] < (self.dt * self.b(t) * I)):
+                        I -= 1
+                        R += 1
+
+                    # P(R -> Death) [6]
+                    if (R > 0 and r[6] < (self.dt * self.d(t) * R)) :
+                        R -= 1
+
+                    # P(R -> S) [7]
+                    if (R > 0 and r[7] < (self.dt * self.c(t) * R)) :
+                        R -= 1
+                        S += 1
+
+                    N = S + I + R
+                    delta_t  = []
+                    if (N > 0) :
+                        if (self.a(t) > 0) : delta_t.append(4.0 / (self.a(t) * N))
+                        if (self.b(t) > 0) : delta_t.append(1.0 / (self.b(t) * N))
+                        if (self.c(t) > 0) : delta_t.append(1.0 / (self.c(t) * N))
+                        if (self.e(t) > 0) : delta_t.append(1.0 / (self.e(t) * N))
+                        if (self.d(t) > 0) : delta_t.append(1.0 / (self.d(t) * N))
+                        if (self.d(t) + self.d_i(t) > 0) : delta_t.append(1.0 / ((self.d(t) + self.d_i(t)) * N))
+
+                    if (len(delta_t) > 0) : self.dt = min(delta_t)
+
+                S_array[j][i] = S
+                I_array[j][i] = I
+                R_array[j][i] = R
+
+        print (S_array)
+
+        for i in range(len(S_avg)) : S_avg[i] = np.mean (S_array[i])
+        for i in range(len(I_avg)) : I_avg[i] = np.mean (I_array[i])
+        for i in range(len(R_avg)) : R_avg[i] = np.mean (R_array[i])
+
+        return (t_array, S_avg, S_array, I_avg, I_array, R_avg, R_array)
