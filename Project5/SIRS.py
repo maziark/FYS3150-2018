@@ -15,17 +15,18 @@ class SIRS:
     d = 0.0
     d_i = 0.0
     dt = 1e-5
-
+    f = 0
     def __init__ (self, N, a, b, c,
                 d = create_lambda(0, 0, 0),
                 d_i = create_lambda(0, 0, 0),
-                e = create_lambda(0, 0, 0)) :
+                e = create_lambda(0, 0, 0), f = create_lambda(0, 0, 0)) :
         self.a = a
         self.b = b
         self.c = c
         self.d = d
         self.e = e
         self.d_i = d_i
+        self.f = f
         self.N = N
 
         c1 = 4.0/(self.a(0) * self.N)
@@ -106,7 +107,7 @@ class SIRS:
         return (t_array, S_array, I_array, R_array)
 
 
-    def MC_ (self, S_init, I_init, time_frame, n_samples = 10):
+    def MC_ (self, S_init, I_init, time_frame, n_samples = 100):
         S = S_init
         I = I_init
         R = self.N - S - I
@@ -119,6 +120,10 @@ class SIRS:
         S_avg = np.zeros (len(t_array))
         I_avg = np.zeros (len(t_array))
         R_avg = np.zeros (len(t_array))
+
+        S_std = np.zeros (len(t_array))
+        I_std = np.zeros (len(t_array))
+        R_std = np.zeros (len(t_array))
 
         for i in range(n_samples):
             S = S_init
@@ -153,11 +158,18 @@ class SIRS:
 
         print (S_array)
 
-        for i in range(len(S_avg)) : S_avg[i] = np.mean (S_array[i])
-        for i in range(len(I_avg)) : I_avg[i] = np.mean (I_array[i])
-        for i in range(len(R_avg)) : R_avg[i] = np.mean (R_array[i])
+        for i in range(len(S_avg)) :
+            S_avg[i] = np.mean (S_array[i])
+            S_std[i] = np.std (S_array[i])
+        for i in range(len(I_avg)) :
+            I_avg[i] = np.mean (I_array[i])
+            I_std[i] = np.std (I_array[i])
+        for i in range(len(R_avg)) :
+            R_avg[i] = np.mean (R_array[i])
+            R_std[i] = np.std (R_array[i])
 
-        return (t_array, S_avg, S_array, I_avg, I_array, R_avg, R_array)
+
+        return (t_array, S_avg, S_std, S_array, I_avg, I_std, I_array, R_avg, R_std, R_array)
 
 
 
@@ -235,6 +247,105 @@ class SIRS:
                         if (self.c(t) > 0) : delta_t.append(1.0 / (self.c(t) * N))
                         if (self.e(t) > 0) : delta_t.append(1.0 / (self.e(t) * N))
                         if (self.d(t) > 0) : delta_t.append(1.0 / (self.d(t) * N))
+                        if (self.d(t) + self.d_i(t) > 0) : delta_t.append(1.0 / ((self.d(t) + self.d_i(t)) * N))
+
+                    if (len(delta_t) > 0) : self.dt = min(delta_t)
+
+                S_array[j][i] = S
+                I_array[j][i] = I
+                R_array[j][i] = R
+
+        print (S_array)
+
+        for i in range(len(S_avg)) : S_avg[i] = np.mean (S_array[i])
+        for i in range(len(I_avg)) : I_avg[i] = np.mean (I_array[i])
+        for i in range(len(R_avg)) : R_avg[i] = np.mean (R_array[i])
+
+        return (t_array, S_avg, S_array, I_avg, I_array, R_avg, R_array)
+
+
+
+
+    def MC_vac (self, S_init, I_init, time_frame, n_samples = 10):
+        S = S_init
+        I = I_init
+        R = self.N - S - I
+
+
+
+        t_array = np.arange(0, time_frame, step = self.dt)
+        S_array = np.zeros((len(t_array), n_samples))
+        I_array = np.zeros((len(t_array), n_samples))
+        R_array = np.zeros((len(t_array), n_samples))
+
+        S_avg = np.zeros (len(t_array))
+        I_avg = np.zeros (len(t_array))
+        R_avg = np.zeros (len(t_array))
+
+        for i in range(n_samples):
+            S = S_init
+            I = I_init
+            R = self.N - S_init - I_init
+            t = 0
+            for j in range (len(t_array)):
+
+
+                while (t + self.dt < t_array[j]):
+                    t += self.dt
+                    # Generate Random Number :
+                    r = np.random.random(9)
+                    N = S + I + R
+                    # Here we have more actions
+                    # P(newBorn) [0]
+                    if (r[0] < (self.e(t) * N * self.dt)) :
+                        S += 1
+
+                    # P(S -> Death) [1]
+                    if (S > 0 and r[1] < (self.d(t) * S * self.dt)) :
+                        S -= 1
+
+                    # P(S -> I) [2]
+                    if (S > 0 and r[2] < (self.a(t) * S * I / N * self.dt)):
+                        I += 1
+                        S -= 1
+
+                    # P(I -> Death_I) [3]
+                    if (I > 0 and r[3] < (self.dt * self.d_i(t) * I)):
+                        I -= 1
+
+                    # P(I -> Death) [4]
+                    if (I > 0 and r[4] < (self.dt * self.d(t) * I)):
+                        I -= 1
+
+                    # P(I -> R) [5]
+                    if (I > 0 and r[5] < (self.dt * self.b(t) * I)):
+                        I -= 1
+                        R += 1
+
+                    # P(R -> Death) [6]
+                    if (R > 0 and r[6] < (self.dt * self.d(t) * R)) :
+                        R -= 1
+
+                    # P(R -> S) [7]
+                    if (R > 0 and r[7] < (self.dt * self.c(t) * R)) :
+                        R -= 1
+                        S += 1
+
+                    # P(S -> R) [8]
+                    if (S > 0 and r[8] < (self.dt * self.f(t))) :
+                        R += 1
+                        S -= 1
+
+
+                    N = S + I + R
+                    delta_t  = []
+                    if (N > 0) :
+                        if (self.a(t) > 0) : delta_t.append(4.0 / (self.a(t) * N))
+                        if (self.b(t) > 0) : delta_t.append(1.0 / (self.b(t) * N))
+                        if (self.c(t) > 0) : delta_t.append(1.0 / (self.c(t) * N))
+                        if (self.e(t) > 0) : delta_t.append(1.0 / (self.e(t) * N))
+                        if (self.d(t) > 0) : delta_t.append(1.0 / (self.d(t) * N))
+                        if (self.f(t) > 0) : delta_t.append(1.0 / (self.f(t) * N))
                         if (self.d(t) + self.d_i(t) > 0) : delta_t.append(1.0 / ((self.d(t) + self.d_i(t)) * N))
 
                     if (len(delta_t) > 0) : self.dt = min(delta_t)
